@@ -1,7 +1,7 @@
 import os
 
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, url_for, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
@@ -109,12 +109,44 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
+
     return apology("TODO")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
+    if request.method == "GET":
+        return render_template("register.html")
+    else:
+
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        #make sure username is entered
+        if not username:
+            return apology("username not entered",400)
+        elif not password:
+            return apology("password not entered",400)
+        elif password != request.form.get("confirmation"):
+            return apology("confirmation do not match!")
+
+        # hash the password and insert the user
+        hash = generate_password_hash(password)
+        user_id = db.execute("INSERT INTO users (username,hash) VALUES (:username,:hash)",username=username,hash=hash)  #ERROR OCCURING IN THIS LINE
+
+        # check for duplicate username
+        if not user_id:
+            return apology("username already taken!")
+
+        #store the session id of the logged in user
+        session["user_id"] = user_id
+
+        # flash the register message
+        flash("registered!")
+
+        #redirect user to the home page
+        return redirect(url_for("index"))
 
     return apology("TODO")
 
@@ -134,3 +166,7 @@ def errorhandler(e):
 # listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
