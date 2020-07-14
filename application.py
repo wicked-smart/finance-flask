@@ -41,7 +41,19 @@ db = SQL("sqlite:///finance.db")
 def index():
     """Show portfolio of stocks"""
 
-    return apology("TODO")
+    # get the cash remaining with the user
+    cash = db.execute("SELECT cash FROM users WHERE id = :user_id", user_id = session["user_id"])
+
+    #get all the stocks bought by the user
+    stocks = db.execute("SELECT symbol, SUM(shares) AS shares FROM portfolios WHERE user_id = :user_id GROUP BY symbol HAVING shares > 0",user_id = session["user_id"])
+    quote = {}
+
+    cash_remaining = cash[0]["cash"]
+
+    for stock in stocks:
+        quote[stock["symbol"]] = lookup(stock["symbol"])
+
+    return render_template("portfolio.html",stocks = stocks, quote = quote,cash_remaining = cash_remaining)
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -93,7 +105,7 @@ def buy():
             return apology("Error occured while INSERT operation")
 
         flash("bought!")
-        redirect(url_for("index"))
+        return redirect(url_for("index"))
 
     return apology("TODO")
 
@@ -214,6 +226,39 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
+    if request.method == "GET":
+        return render_template("sell.html")
+    else:
+        symbol = request.form.get("symbol")
+        quote = lookup(symbol)
+
+        if not quote:
+            return apology("Invalid Symbol")
+
+        shares  = int(request.form.get("shares"))
+
+
+
+        if shares <= 0:
+            return apology("Enter positive # of shares")
+
+        # check for the shares available
+        share_count = db.execute("SELECT SUM(shares) AS share FROM portfolios WHERE user_id = :user_id", user_id = session["user_id"])
+
+        if share_count[0]["shares"] < shares:
+            return apology("not enough shares to be sold")
+
+        cash  = db.execute("SELECT cash FROM users WHERE id = :user_id",id = session["user_id"])
+
+        total_share_price = shares * quote["price"];
+
+        db.execute("UPDATE users SET cash -= :total_share_price", total_share_price = total_share_price)
+        db.execute("UPDATE portfolios SET shares -= :shares ", shares = shares)
+
+        flash("Sold!")
+        redirect(url_for("index"))
+
+
     return apology("TODO")
 
 
