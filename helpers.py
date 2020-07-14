@@ -34,12 +34,13 @@ def login_required(f):
     return decorated_function
 
 
+
 def lookup(symbol):
     """Look up quote for symbol."""
 
     # Contact API
     try:
-        response = requests.get(f"https://api.iextrading.com/1.0/stock/{urllib.parse.quote_plus(symbol)}/quote")
+        response = requests.get(f"https://cloud.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote/latestPrice?token=sk_4493237be8c84cfc8e4134787fd4ace6")
         response.raise_for_status()
     except requests.RequestException:
         return None
@@ -48,10 +49,10 @@ def lookup(symbol):
     try:
         quote = response.json()
         return {
-            "name": quote["companyName"],
-            "price": float(quote["latestPrice"]),
-            "symbol": quote["symbol"]
+            "price": float(quote),
+            "symbol": symbol
         }
+
     except (KeyError, TypeError, ValueError):
         return None
 

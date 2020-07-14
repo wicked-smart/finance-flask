@@ -40,6 +40,7 @@ db = SQL("sqlite:///finance.db")
 @login_required
 def index():
     """Show portfolio of stocks"""
+
     return apology("TODO")
 
 
@@ -47,6 +48,53 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
+    if request.method == 'GET':
+        return render_template("buy.html")
+    else:
+        quote = lookup(request.form.get("symbol"))
+
+        # check for Invalid symbol
+        if not quote:
+            return apology("Invalid Symbol")
+
+        #get the share count
+        try:
+           shares = int(request.form.get("shares"))
+        except:
+            return apology("shares must be a positive integer")
+
+        # share count should be greater than zero
+        if shares <= 0:
+            return apology("shares must be a positive integer")
+
+        # get the cash remaining with the user
+        row = db.execute("SELECT cash FROM users WHERE id = :user_id",user_id = session["user_id"])
+
+        # total $$$'s to be spent
+        cash_remaining = row[0]["cash"]
+        price_per_share = quote["price"]
+
+        # Calculate the price of requested shares
+        total_price = price_per_share * shares
+
+        if total_price > cash_remaining:
+            return apology("not enough funds")
+
+        # update the cash field in uers table
+        db.execute("UPDATE users SET cash = cash - :total_price WHERE id = :user_id",total_price = total_price, user_id = session["user_id"])
+        try:
+            db.execute("INSERT INTO portfolios (user_id,symbol,shares,price_per_share) VALUES (:user_id,:symbol,:shares,:price_per_share) ",
+                user_id = session["user_id"],
+                symbol = quote["symbol"],
+                shares = shares,
+                price_per_share = quote["price"])
+
+        except RuntimeError:
+            return apology("Error occured while INSERT operation")
+
+        flash("bought!")
+        redirect(url_for("index"))
+
     return apology("TODO")
 
 
@@ -109,8 +157,19 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
+    if request.method == "GET":
+        return render_template("quote.html")
+    else:
 
-    return apology("TODO")
+        quote = lookup(request.form.get("symbol"))
+        print(quote)
+
+        if not quote:
+            return apology("Invalid Symbol")
+        else:
+            return render_template("quote-render.html",quote=quote)
+
+
 
 
 @app.route("/register", methods=["GET", "POST"])
