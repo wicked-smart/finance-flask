@@ -1,3 +1,3 @@
-from finance-flask import getApp
+from catalog import getApp
 
 app = getApp()
