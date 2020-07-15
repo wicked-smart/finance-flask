@@ -1,3 +1,3 @@
-from catalog import getApp
+from finance import getApp
 
 app = getApp()
