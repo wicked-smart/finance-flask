@@ -1,3 +1,4 @@
-from finance import getApp
+from finance import app
 
-app = getApp()
+if __name__ == "__main__":
+    app.run(debug=True)

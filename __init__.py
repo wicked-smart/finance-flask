@@ -37,8 +37,8 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
 #for deploying on Heroku
-def getApp():
-    return app
+#def getApp():
+#    return app
 
 Session(app)
 
