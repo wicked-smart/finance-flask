@@ -187,14 +187,56 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
-@app.route("/change_password",methods=["GET","POST"])
-def change_password():
-    """ change password """
+@app.route("/check_password",methods=["GET","POST"])
+def check_password():
+    """ check password
 
     if request.method == 'GET':
-        return render_template("change-password.html")
+        return render_template("check-password.html")
+    else:
+        rows  = db.execute("SELECT hash FROM users WHERE id = :user_id", user_id = session["user_id"])
 
+        print(check_password_hash(rows[0]["hash"], request.form.get("password"))
+
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+             flash("Invalid Password!")
+             return apology("Invalid Password!")
+        else:
+             return render_template("change-password.html")
+    """
     return apology("TODO")
+
+@app.route("/change_password",methods=["GET","POST"])
+def change_password():
+    """
+    new_passwd = request.form.get("password")
+
+    if not  new_passwd:
+        flash("Must Provide New Password !",'error')
+        return apology("Must Provide New Password")
+
+    confirmation = request.form.get("confirmation")
+
+    if not confirmation:
+        flash("Must Provide Confirmation!",'error')
+        #return redirect(url_for("change_password"))
+        return apology("Must Provide Confirmation!")
+
+    if not new_passwd == confirmation:
+        flash("Both Passwords Needs to be same!",'error')
+        return apology("Both Passwords needs to be same")
+    else:
+        hash = generate_password_hash(new_passwd)
+        row = db.execute("UPDATE users SET hash = :hash",hash = hash)
+        if row != 1:
+            flash("Error Updating Password! Try again",'error')
+            return apology("Error Updating Password! Try again")
+        else:
+            flash("Password Changed Succesfully !")
+            return redirect(url_for("index"))
+    """
+    return apology("TODO")
+
 
 
 @app.route("/quote", methods=["GET", "POST"])
@@ -236,7 +278,7 @@ def register():
 
         # hash the password and insert the user
         hash = generate_password_hash(password)
-        user_id = db.execute("INSERT INTO users (username,hash) VALUES (:username,:hash)",username=username,hash=hash)  #ERROR OCCURING IN THIS LINE
+        user_id = db.execute("INSERT INTO users (username,hash) VALUES (:username,:hash)",username=username,hash=hash)
 
         # check for duplicate username
         if not user_id:
