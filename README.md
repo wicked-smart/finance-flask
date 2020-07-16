@@ -3,6 +3,8 @@ MVC based web-app that let users quote,buy,sell stocks and also, displays the hi
 * New features added are adding more funds off savings account , changing password et
 
 This **web-app** can be deployed to **heroku** by following standand procedure
+
+
 **Web-App Requirements**
 
 * **Python3**
