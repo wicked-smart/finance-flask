@@ -35,11 +35,6 @@ app.jinja_env.filters["usd"] = usd
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-
-#for deploying on Heroku
-#def getApp():
-#    return app
-
 Session(app)
 
 # Configure CS50 Library to use SQLite database
@@ -119,6 +114,14 @@ def buy():
         # update the cash field in uers table
         db.execute("UPDATE users SET cash = cash - :total_price WHERE id = :user_id",total_price = total_price, user_id = session["user_id"])
 
+         # Insert transaction INFO into the transactions table AFTER the sell operation
+        db.execute("INSERT INTO transactions (user_id, symbol, shares,  trans_type) VALUES (:user_id, :symbol, :shares, :trans_type )",
+            user_id = session["user_id"],
+            symbol = symbol,
+            shares = shares,
+            trans_type = 'BUY')
+
+
         flash("bought!")
         return redirect(url_for("index"))
 
@@ -129,7 +132,12 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+    rows = db.execute("SELECT symbol, shares, trans_type, datetime( trans_time,'localtime','+05:30') as transacted_at FROM transactions WHERE user_id = :user_id", user_id = session["user_id"])
+
+    # display user's transactions
+    return render_template("history.html",rows = rows)
+
+
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -178,6 +186,15 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
+
+@app.route("/change_password",methods=["GET","POST"])
+def change_password():
+    """ change password """
+
+    if request.method == 'GET':
+        return render_template("change-password.html")
+
+    return apology("TODO")
 
 
 @app.route("/quote", methods=["GET", "POST"])
@@ -236,6 +253,25 @@ def register():
 
     return apology("TODO")
 
+@app.route("/add_funds", methods=["GET", "POST"])
+@login_required
+def add_funds():
+    """ Add More funds , If Your Portfolio needs and Doing Well """
+    if request.method == 'GET':
+        flash("Balance Remaining: $5000 !")
+        return render_template("Add-Funds.html")
+    else:
+        amount = int(request.form.get("amount"))
+
+        if amount > 5000:
+            return apology("Balance Not Available !")
+        else:
+            db.execute("UPDATE users SET cash = cash + :amount WHERE id = :user_id",amount = amount, user_id = session["user_id"])
+            flash("Funds Added !")
+            return redirect(url_for("index"))
+
+
+
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
@@ -273,11 +309,22 @@ def sell():
         db.execute("UPDATE users SET cash = cash + :total_share_price WHERE id = :user_id", total_share_price = total_share_price, user_id = session["user_id"])
         db.execute("UPDATE portfolios SET shares = shares - :shares WHERE user_id = :user_id AND symbol = :symbol", shares = shares, user_id = session["user_id"], symbol = symbol)
 
+
+
+
+
         # delete the row if share_count reaches 0
         row = db.execute("SELECT shares FROM portfolios WHERE user_id = :user_id AND symbol = :symbol", user_id = session["user_id"], symbol = symbol)
 
         if row[0]["shares"] <= 0:
             db.execute("DELETE FROM portfolios WHERE user_id = :user_id AND symbol = :symbol", user_id = session["user_id"], symbol = symbol)
+
+         # Insert transaction INFO into the transactions table AFTER the sell operation
+        db.execute("INSERT INTO transactions (user_id, symbol, shares,  trans_type) VALUES (:user_id, :symbol, :shares, :trans_type )",
+            user_id = session["user_id"],
+            symbol = symbol,
+            shares = shares,
+            trans_type = 'SELL')
 
          # Implemnt History thing here
         flash("Sold!")
@@ -295,7 +342,6 @@ def errorhandler(e):
 # listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
-
 
 
 if __name__ == "__main__":
