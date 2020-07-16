@@ -3,3 +3,12 @@ MVC based web-app that let users quote,buy,sell stocks and also, displays the hi
 * New features added are adding more funds off savings account , changing password et
 
 ### web-app can be deployed to heroku by following standard procedure of deploying flask web-app to Heroku
+
+**Web-App Requirements**
+
+* **Python3**
+* **Flask** -- As a Python web Framework
+* **Jinja2** -- As a Python web Templating Engine
+* **IEX** -- API for querying stock's Info's like price, symbol etc.
+* **Bootstrap , HTML, CSS** -- Frontend Elements
+* **Sqlite3** -- As a Database
