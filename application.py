@@ -328,7 +328,10 @@ def sell():
         if not quote:
             return apology("Invalid Symbol")
 
-        shares  = int(request.form.get("shares"))
+        try:
+            shares  = int(request.form.get("shares"))
+        except:
+            return apology("Invalid Entry!")
 
 
 
