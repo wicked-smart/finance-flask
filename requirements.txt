@@ -28,7 +28,7 @@ cycler==0.10.0
 decorator==4.4.2
 defusedxml==0.6.0
 dj-database-url==0.5.0
-Django==3.0.8
+Django==3.1.6
 docutils==0.15.2
 EditorConfig==0.12.2
 entrypoints==0.3
