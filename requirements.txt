@@ -144,7 +144,7 @@ twitter-photos==0.4.0
 TwitterAPI==2.5.10
 twython==3.7.0
 typed-ast==1.4.1
-urllib3==1.25.8
+urllib3==1.26.5
 virtualenv==16.7.9
 virtualenv-clone==0.5.4
 wcwidth==0.1.9
