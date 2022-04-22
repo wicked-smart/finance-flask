@@ -100,7 +100,7 @@ pylint-flask==0.6
 pylint-plugin-utils==0.6
 pyocr==0.7.2
 pyparsing==2.4.6
-PyPDF2==1.26.0
+PyPDF2==1.27.5
 Pyphen==0.9.5
 pyrsistent==0.16.0
 PySocks==1.7.1
